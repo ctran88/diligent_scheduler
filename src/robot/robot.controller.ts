@@ -11,7 +11,7 @@ export class RobotController {
   @Get()
   public async getAll(): Promise<RobotDto[]> {
     const entities = await this.robotService.findAll();
-    return entities.map((i) => RobotDto.fromEntity(i));
+    return Promise.all(entities.map(async (i) => RobotDto.fromEntity(i)));
   }
 
   @Get(':id')

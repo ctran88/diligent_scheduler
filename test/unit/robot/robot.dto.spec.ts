@@ -19,25 +19,25 @@ describe('RobotDto', () => {
   });
 
   describe('#fromEntity', () => {
-    it('should map the activeTask property correctly', () => {
-      const result = RobotDto.fromEntity(entity);
+    it('should map the activeTask property correctly', async () => {
+      const result = await RobotDto.fromEntity(entity);
       expect(result.activeTask?.status).toBe(Status.ACTIVE);
     });
 
-    it('should set activeTask to undefined if none exists', () => {
-      const result = RobotDto.fromEntity(entity);
+    it('should set activeTask to undefined if none exists', async () => {
+      const result = await RobotDto.fromEntity(entity);
       expect(result.activeTask).toBeUndefined();
     });
 
-    it('should map the taskQueue property correctly', () => {
-      const result = RobotDto.fromEntity(entity);
+    it('should map the taskQueue property correctly', async () => {
+      const result = await RobotDto.fromEntity(entity);
       const areAllQueued = result.taskQueue.every((i) => i.status === Status.QUEUED);
 
       expect(areAllQueued).toBeTruthy();
     });
 
-    it('should map the taskHistory property correctly', () => {
-      const result = RobotDto.fromEntity(entity);
+    it('should map the taskHistory property correctly', async () => {
+      const result = await RobotDto.fromEntity(entity);
       const areAllAbandonedOrCompleted = result.taskHistory.every(
         (i) => i.status === Status.ABANDONED || i.status === Status.COMPLETED,
       );

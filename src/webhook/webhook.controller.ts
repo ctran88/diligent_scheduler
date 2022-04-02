@@ -1,13 +1,13 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { TaskService } from '@src/task/task.service';
-import { ReceiveTaskEventDto } from './dto/receive-task-event.dto';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { ReceiveTaskEvent } from './models/receive-task-event';
 
 @Controller('webhooks')
 export class WebhookController {
-  public constructor(private readonly taskService: TaskService) {}
+  public constructor(private readonly eventEmitter: EventEmitter2) {}
 
   @Post('tasks')
-  public async receieveTaskEvent(@Body() body: ReceiveTaskEventDto): Promise<void> {
-    await this.taskService.updateTaskStatus(body.taskId, body.status);
+  public receieveTaskEvent(@Body() body: ReceiveTaskEvent): void {
+    this.eventEmitter.emit('task.finished', body);
   }
 }

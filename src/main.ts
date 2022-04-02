@@ -1,21 +1,13 @@
-import { MikroORM } from '@mikro-orm/core';
-import { VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { ensureDatabase } from './config/mikro-orm.config';
+import { configureApp } from './config/app.config';
 import { buildSwaggerOptions } from './config/swagger.config';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
 
-  app.enableVersioning({
-    type: VersioningType.URI,
-    defaultVersion: '1',
-  });
-
-  const orm = app.get<MikroORM>(MikroORM);
-  await ensureDatabase(orm);
+  await configureApp(app);
 
   const document = SwaggerModule.createDocument(app, buildSwaggerOptions());
   SwaggerModule.setup('api-doc', app, document);
