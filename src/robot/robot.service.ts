@@ -1,6 +1,7 @@
 import { EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { Injectable } from '@nestjs/common';
+import { TaskEntity } from '@src/task/task.entity';
 import { RobotEntity } from './robot.entity';
 
 @Injectable()
@@ -20,5 +21,15 @@ export class RobotService {
     await this.repo.persistAndFlush(newRobot);
 
     return newRobot;
+  }
+
+  public async createTask(id: number, partialTask: Partial<TaskEntity>): Promise<RobotEntity> {
+    const robot = await this.findById(id);
+    const newTask = Object.assign(new TaskEntity(), partialTask);
+
+    robot.tasks.add(newTask);
+    await this.repo.persistAndFlush(robot);
+
+    return robot;
   }
 }

@@ -1,34 +1,8 @@
-import { Entity, PrimaryKey, ManyToOne, Property } from '@mikro-orm/core';
+import { Entity, PrimaryKey, ManyToOne, Property, Enum } from '@mikro-orm/core';
+import { ApiProperty } from '@nestjs/swagger';
 import { RobotEntity } from 'src/robot/robot.entity';
 
-@Entity({ tableName: 'tasks' })
-export class TaskEntity {
-  @PrimaryKey()
-  public id: number;
-
-  @ManyToOne()
-  public robot: RobotEntity;
-
-  @Property()
-  public priority: TaskPriority;
-
-  @Property()
-  public taskTimeSeconds: number;
-
-  @Property()
-  public status: Status;
-
-  @Property({ onCreate: () => new Date() })
-  public createdAt: Date;
-
-  @Property({ onCreate: () => new Date(), onUpdate: () => new Date() })
-  public updatedAt: Date;
-
-  @Property()
-  public updatedBy: string;
-}
-
-export enum TaskPriority {
+export enum Priority {
   HIGH = 'HIGH',
   MEDIUM = 'MEDIUM',
   LOW = 'LOW',
@@ -39,4 +13,39 @@ export enum Status {
   ACTIVE = 'ACTIVE',
   COMPLETED = 'COMPLETED',
   ABANDONED = 'ABANDONED',
+}
+
+@Entity({ tableName: 'tasks' })
+export class TaskEntity {
+  @ApiProperty()
+  @PrimaryKey()
+  public id: number;
+
+  @ApiProperty()
+  @ManyToOne()
+  public robot: RobotEntity;
+
+  @ApiProperty()
+  @Enum({ default: Priority.LOW, type: () => Priority })
+  public priority: Priority;
+
+  @ApiProperty()
+  @Property()
+  public taskTimeSeconds: number;
+
+  @ApiProperty()
+  @Enum({ onCreate: () => Status.QUEUED, type: () => Status })
+  public status: Status;
+
+  @ApiProperty()
+  @Property({ onCreate: () => new Date() })
+  public createdAt: Date;
+
+  @ApiProperty()
+  @Property({ onCreate: () => new Date(), onUpdate: () => new Date() })
+  public updatedAt: Date;
+
+  @ApiProperty()
+  @Property()
+  public updatedBy: string;
 }

@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { CreateTaskDto } from '@src/task/dto/create-task.dto';
 import { CreateRobotDto } from './dtos/create-robot.dto';
 import { RobotDto } from './dtos/robot.dto';
 import { RobotService } from './robot.service';
@@ -14,14 +15,20 @@ export class RobotController {
   }
 
   @Get(':id')
-  public async getById(@Param() id: number): Promise<RobotDto> {
+  public async getById(@Param('id') id: number): Promise<RobotDto> {
     const entity = await this.robotService.findById(id);
     return RobotDto.fromEntity(entity);
   }
 
   @Post()
-  public async post(@Body() body: CreateRobotDto): Promise<RobotDto> {
+  public async createRobot(@Body() body: CreateRobotDto): Promise<RobotDto> {
     const entity = await this.robotService.create(body);
+    return RobotDto.fromEntity(entity);
+  }
+
+  @Post(':id/tasks')
+  public async createTask(@Param('id') id: number, @Body() body: CreateTaskDto): Promise<RobotDto> {
+    const entity = await this.robotService.createTask(id, body);
     return RobotDto.fromEntity(entity);
   }
 }
