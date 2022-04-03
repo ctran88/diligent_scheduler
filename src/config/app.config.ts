@@ -1,8 +1,9 @@
 import { MikroORM } from '@mikro-orm/core';
-import { INestApplication, VersioningType } from '@nestjs/common';
+import { INestApplication, ValidationPipe, VersioningType } from '@nestjs/common';
 import { ensureDatabase } from './mikro-orm.config';
 
 export async function configureApp(app: INestApplication): Promise<void> {
+  app.useGlobalPipes(new ValidationPipe());
   app.enableVersioning({
     type: VersioningType.URI,
     defaultVersion: '1',

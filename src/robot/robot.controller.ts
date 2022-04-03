@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
 import { CreateTaskDto } from '@src/task/dto/create-task.dto';
 import { CreateRobotDto } from './dtos/create-robot.dto';
 import { RobotDto } from './dtos/robot.dto';
@@ -15,7 +15,7 @@ export class RobotController {
   }
 
   @Get(':id')
-  public async getById(@Param('id') id: number): Promise<RobotDto> {
+  public async getById(@Param('id', ParseIntPipe) id: number): Promise<RobotDto> {
     const entity = await this.robotService.findById(id);
     return RobotDto.fromEntity(entity);
   }
@@ -27,7 +27,7 @@ export class RobotController {
   }
 
   @Post(':id/tasks')
-  public async createTask(@Param('id') id: number, @Body() body: CreateTaskDto): Promise<RobotDto> {
+  public async createTask(@Param('id', ParseIntPipe) id: number, @Body() body: CreateTaskDto): Promise<RobotDto> {
     const entity = await this.robotService.createTask(id, body);
     return RobotDto.fromEntity(entity);
   }
