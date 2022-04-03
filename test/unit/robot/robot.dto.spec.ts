@@ -4,29 +4,43 @@ import { Status, TaskEntity } from '@src/task/task.entity';
 
 describe('RobotDto', () => {
   let entity: RobotEntity;
+  let getItemsSpy: jest.SpyInstance<TaskEntity[], [check?: boolean | undefined]>;
 
   beforeEach(() => {
     entity = new RobotEntity();
 
-    jest
-      .spyOn(entity.tasks, 'getItems')
-      .mockImplementationOnce(() => [
-        Object.assign(new TaskEntity(), { status: Status.ABANDONED }),
-        Object.assign(new TaskEntity(), { status: Status.ACTIVE }),
-        Object.assign(new TaskEntity(), { status: Status.COMPLETED }),
-        Object.assign(new TaskEntity(), { status: Status.QUEUED }),
-      ]);
+    jest.spyOn(entity.tasks, 'init').mockImplementationOnce(jest.fn());
+
+    getItemsSpy = jest.spyOn(entity.tasks, 'getItems');
+    getItemsSpy.mockImplementationOnce(() => [
+      Object.assign(new TaskEntity(), { status: Status.ABANDONED }),
+      Object.assign(new TaskEntity(), { status: Status.ACTIVE }),
+      Object.assign(new TaskEntity(), { status: Status.COMPLETED }),
+      Object.assign(new TaskEntity(), { status: Status.QUEUED }),
+    ]);
+  });
+
+  afterAll(() => {
+    jest.clearAllMocks();
+    jest.resetAllMocks();
   });
 
   describe('#fromEntity', () => {
+    it('should set activeTask to undefined if none exists', async () => {
+      getItemsSpy.mockReset();
+      getItemsSpy.mockImplementationOnce(() => [
+        Object.assign(new TaskEntity(), { status: Status.ABANDONED }),
+        Object.assign(new TaskEntity(), { status: Status.COMPLETED }),
+        Object.assign(new TaskEntity(), { status: Status.QUEUED }),
+      ]);
+
+      const result = await RobotDto.fromEntity(entity);
+      expect(result.activeTask).toBeUndefined();
+    });
+
     it('should map the activeTask property correctly', async () => {
       const result = await RobotDto.fromEntity(entity);
       expect(result.activeTask?.status).toBe(Status.ACTIVE);
-    });
-
-    it('should set activeTask to undefined if none exists', async () => {
-      const result = await RobotDto.fromEntity(entity);
-      expect(result.activeTask).toBeUndefined();
     });
 
     it('should map the taskQueue property correctly', async () => {
