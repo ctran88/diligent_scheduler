@@ -1,13 +1,14 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, Post } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { ReceiveTaskEvent } from './models/receive-task-event';
+import { ReceiveTaskEventDto } from './dto/receive-task-event.dto';
 
 @Controller('webhooks')
 export class WebhookController {
   public constructor(private readonly eventEmitter: EventEmitter2) {}
 
   @Post('tasks')
-  public receieveTaskEvent(@Body() body: ReceiveTaskEvent): void {
+  @HttpCode(200)
+  public receieveTaskEvent(@Body() body: ReceiveTaskEventDto): void {
     this.eventEmitter.emit('task.finished', body);
   }
 }

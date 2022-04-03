@@ -2,7 +2,7 @@ import { RobotDto } from '@src/robot/dtos/robot.dto';
 import { RobotEntity } from '@src/robot/robot.entity';
 import { Status, TaskEntity } from '@src/task/task.entity';
 
-describe('RobotDto', () => {
+describe('RobotDto unit tests', () => {
   let entity: RobotEntity;
   let getItemsSpy: jest.SpyInstance<TaskEntity[], [check?: boolean | undefined]>;
 

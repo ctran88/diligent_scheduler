@@ -17,7 +17,7 @@ export class TaskService {
   public async setNextActiveTask(robotId: number): Promise<TaskEntity | null> {
     const task = await this.repo.findOne(
       {
-        $and: [{ robot: { id: robotId } }, { status: { $ne: Status.ACTIVE } }],
+        $and: [{ robot: { id: robotId } }, { status: Status.QUEUED }],
       },
       {
         orderBy: [{ priority: QueryOrder.ASC }, { taskTimeSeconds: QueryOrder.ASC }],

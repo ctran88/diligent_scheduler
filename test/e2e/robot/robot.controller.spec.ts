@@ -8,9 +8,10 @@ import { Priority, Status, TaskEntity } from '@src/task/task.entity';
 import { RobotFactory } from '@test/factories/robot.factory';
 import { TaskFactory } from '@test/factories/task.factory';
 import { bootstrapTestApp } from '@test/utils/bootstrap-test-app';
+import { getErrorMessages } from '@test/utils/validation-message';
 import request from 'supertest';
 
-describe('RobotController e2e', () => {
+describe('RobotController e2e tests', () => {
   let app: INestApplication;
   let em: EntityManager;
   let robotFactory: RobotFactory;
@@ -88,7 +89,7 @@ describe('RobotController e2e', () => {
         });
       });
 
-      it('should return the correct active task', async () => {
+      it('should return an active task when task.status is ACTIVE', async () => {
         const robot = await em.findOneOrFail(RobotEntity, { id: 1 });
         const task = await taskFactory.createOne({ robot, status: Status.ACTIVE });
 
@@ -109,7 +110,7 @@ describe('RobotController e2e', () => {
         });
       });
 
-      it('should return the correct queued tasks', async () => {
+      it('should return queued tasks when task.status is QUEUED', async () => {
         const robot = await em.findOneOrFail(RobotEntity, { id: 1 });
         const task = await taskFactory.createOne({ robot, status: Status.QUEUED });
 
@@ -132,7 +133,7 @@ describe('RobotController e2e', () => {
         });
       });
 
-      it('should return the correct historical tasks', async () => {
+      it('should return historical tasks when task.status is COMPLETED or ABANDONED', async () => {
         const robot = await em.findOneOrFail(RobotEntity, { id: 1 });
         const taskCompleted = await taskFactory.createOne({ robot, status: Status.COMPLETED });
         const taskAbandoned = await taskFactory.createOne({ robot, status: Status.ABANDONED });
@@ -209,24 +210,6 @@ describe('RobotController e2e', () => {
 
   describe('[POST]', () => {
     const robotsUrl = '/v1/robots';
-
-    const getErrorMessages = (
-      value: string | number | boolean | Priority | undefined | null,
-      parameterName: string,
-      expectedType: string,
-    ): string[] => {
-      const errorMessages: string[] = [];
-
-      if (value === null || value === undefined || value === '') {
-        errorMessages.push(`${parameterName} should not be empty`);
-      }
-
-      if (typeof value !== expectedType) {
-        errorMessages.push(`${parameterName} must be a ${expectedType}`);
-      }
-
-      return errorMessages;
-    };
 
     describe('robots', () => {
       let payload: CreateRobotDto;
@@ -314,7 +297,7 @@ describe('RobotController e2e', () => {
 
         expect(response.status).toBe(400);
         expect(response.body).toMatchObject({
-          message: getErrorMessages(priority, 'priority', 'valid enum value'),
+          message: getErrorMessages(priority, 'priority', 'enum'),
         });
       });
 
@@ -324,13 +307,13 @@ describe('RobotController e2e', () => {
           Object.assign(payload, { taskTimeSeconds });
           const response = await request(app.getHttpServer()).post(tasksUrl).send(payload);
 
+          const errorMessages = getErrorMessages(taskTimeSeconds, 'taskTimeSeconds', 'int');
+          errorMessages.push('taskTimeSeconds must not be greater than 3600');
+          errorMessages.push('taskTimeSeconds must not be less than 0');
+
           expect(response.status).toBe(400);
           expect(response.body).toMatchObject({
-            message: expect.arrayContaining([
-              'taskTimeSeconds must not be greater than 3600',
-              'taskTimeSeconds must not be less than 0',
-              'taskTimeSeconds must be an integer number',
-            ]),
+            message: expect.arrayContaining(errorMessages),
           });
         },
       );
