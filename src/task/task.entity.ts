@@ -26,6 +26,10 @@ export class TaskEntity {
   public robot: RobotEntity;
 
   @ApiProperty()
+  @Property()
+  public name: string;
+
+  @ApiProperty()
   @Enum({
     type: () => Priority,
     customOrder: [Priority.HIGH, Priority.MEDIUM, Priority.LOW],

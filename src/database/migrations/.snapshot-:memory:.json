@@ -57,6 +57,15 @@
           "nullable": false,
           "mappedType": "integer"
         },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "text"
+        },
         "priority": {
           "name": "priority",
           "type": "text",
