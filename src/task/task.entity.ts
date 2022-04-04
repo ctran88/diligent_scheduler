@@ -29,7 +29,7 @@ export class TaskEntity {
   @Property()
   public name: string;
 
-  @ApiProperty()
+  @ApiProperty({ enum: [Priority.HIGH, Priority.MEDIUM, Priority.LOW] })
   @Enum({
     type: () => Priority,
     customOrder: [Priority.HIGH, Priority.MEDIUM, Priority.LOW],
@@ -41,7 +41,7 @@ export class TaskEntity {
   @Property()
   public taskTimeSeconds: number;
 
-  @ApiProperty()
+  @ApiProperty({ enum: [Status.ABANDONED, Status.ACTIVE, Status.COMPLETED, Status.QUEUED] })
   @Enum({ onCreate: () => Status.QUEUED, type: () => Status })
   public status: Status;
 

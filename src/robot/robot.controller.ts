@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
-import { CreateTaskDto } from '@src/task/dto/create-task.dto';
+import { CreateTasksDto } from '@src/task/dto/create-tasks.dto';
 import { CreateRobotDto } from './dtos/create-robot.dto';
 import { RobotDto } from './dtos/robot.dto';
 import { RobotService } from './robot.service';
@@ -27,8 +27,8 @@ export class RobotController {
   }
 
   @Post(':id/tasks')
-  public async createTask(@Param('id', ParseIntPipe) id: number, @Body() body: CreateTaskDto): Promise<RobotDto> {
-    const entity = await this.robotService.createTask(id, body);
+  public async createTask(@Param('id', ParseIntPipe) id: number, @Body() body: CreateTasksDto): Promise<RobotDto> {
+    const entity = await this.robotService.createTask(id, body.tasks);
     return RobotDto.fromEntity(entity);
   }
 }

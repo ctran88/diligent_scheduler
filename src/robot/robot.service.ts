@@ -23,11 +23,11 @@ export class RobotService {
     return newRobot;
   }
 
-  public async createTask(id: number, partialTask: Partial<TaskEntity>): Promise<RobotEntity> {
+  public async createTask(id: number, partialTasks: Partial<TaskEntity>[]): Promise<RobotEntity> {
     const robot = await this.findById(id);
-    const newTask = Object.assign(new TaskEntity(), partialTask);
+    const newTasks = partialTasks.map((task) => Object.assign(new TaskEntity(), task));
 
-    robot.tasks.add(newTask);
+    robot.tasks.add(...newTasks);
     await this.repo.persistAndFlush(robot);
 
     return robot;

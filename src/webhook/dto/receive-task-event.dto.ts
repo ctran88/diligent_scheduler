@@ -16,6 +16,6 @@ export class ReceiveTaskEventDto {
   @IsEnum(Status)
   @IsIn([Status.ABANDONED, Status.COMPLETED])
   @IsNotEmpty()
-  @ApiProperty()
+  @ApiProperty({ enum: [Status.ABANDONED, Status.COMPLETED] })
   public readonly status: Status;
 }

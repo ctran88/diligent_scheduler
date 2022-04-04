@@ -4,6 +4,7 @@ import { INestApplication } from '@nestjs/common';
 import { CreateRobotDto } from '@src/robot/dtos/create-robot.dto';
 import { RobotEntity } from '@src/robot/robot.entity';
 import { CreateTaskDto } from '@src/task/dto/create-task.dto';
+import { CreateTasksDto } from '@src/task/dto/create-tasks.dto';
 import { Priority, Status, TaskEntity } from '@src/task/task.entity';
 import { RobotFactory } from '@test/factories/robot.factory';
 import { TaskFactory } from '@test/factories/task.factory';
@@ -239,16 +240,19 @@ describe('RobotController e2e tests', () => {
 
     describe('tasks', () => {
       const tasksUrl = `${robotsUrl}/1/tasks`;
-      let payload: CreateTaskDto;
+      let payload: CreateTasksDto;
 
       beforeEach(() => {
-        payload = new CreateTaskDto();
-        Object.assign(payload, {
+        payload = new CreateTasksDto();
+
+        const task = Object.assign(new CreateTaskDto(), {
           name: faker.name.firstName(),
           priority: faker.random.arrayElement([Priority.HIGH, Priority.MEDIUM, Priority.LOW]),
           taskTimeSeconds: faker.datatype.number({ min: 0, max: 3600 }),
           updatedBy: faker.name.firstName(),
         });
+
+        payload.tasks.push(task);
       });
 
       it('should create a new task for a robot', async () => {
@@ -260,7 +264,7 @@ describe('RobotController e2e tests', () => {
           name: 'Moxie',
           taskQueue: [
             {
-              ...payload,
+              ...payload.tasks[0],
               robot: {
                 id: 1,
               },
@@ -276,40 +280,40 @@ describe('RobotController e2e tests', () => {
       });
 
       it('should return a 400 if an empty payload is provided', async () => {
-        const response = await request(app.getHttpServer()).post(tasksUrl).send({});
+        const response = await request(app.getHttpServer()).post(tasksUrl).send([]);
 
         expect(response.status).toBe(400);
       });
 
       it.each([null, undefined, '', true, 1])('should return a 400 if name is %s', async (name) => {
-        Object.assign(payload, { name });
+        Object.assign(payload.tasks[0], { name });
         const response = await request(app.getHttpServer()).post(tasksUrl).send(payload);
 
         expect(response.status).toBe(400);
         expect(response.body).toMatchObject({
-          message: getErrorMessages(name, 'name', 'string'),
+          message: getErrorMessages(name, 'tasks.0.name', 'string'),
         });
       });
 
       it.each([null, undefined, '', 'foo', true, 1])('should return a 400 if priority is %s', async (priority) => {
-        Object.assign(payload, { priority });
+        Object.assign(payload.tasks[0], { priority });
         const response = await request(app.getHttpServer()).post(tasksUrl).send(payload);
 
         expect(response.status).toBe(400);
         expect(response.body).toMatchObject({
-          message: getErrorMessages(priority, 'priority', 'enum'),
+          message: getErrorMessages(priority, 'tasks.0.priority', 'enum'),
         });
       });
 
       it.each([null, undefined, '', 'foo', true])(
         'should return a 400 if taskTimeSeconds is %s',
         async (taskTimeSeconds) => {
-          Object.assign(payload, { taskTimeSeconds });
+          Object.assign(payload.tasks[0], { taskTimeSeconds });
           const response = await request(app.getHttpServer()).post(tasksUrl).send(payload);
 
-          const errorMessages = getErrorMessages(taskTimeSeconds, 'taskTimeSeconds', 'int');
-          errorMessages.push('taskTimeSeconds must not be greater than 3600');
-          errorMessages.push('taskTimeSeconds must not be less than 0');
+          const errorMessages = getErrorMessages(taskTimeSeconds, 'tasks.0.taskTimeSeconds', 'int');
+          errorMessages.push('tasks.0.taskTimeSeconds must not be greater than 3600');
+          errorMessages.push('tasks.0.taskTimeSeconds must not be less than 0');
 
           expect(response.status).toBe(400);
           expect(response.body).toMatchObject({
@@ -319,16 +323,16 @@ describe('RobotController e2e tests', () => {
       );
 
       it.each([-1, 3601])('should return a 400 if taskTimeSeconds is %s', async (taskTimeSeconds) => {
-        Object.assign(payload, { taskTimeSeconds });
+        Object.assign(payload.tasks[0], { taskTimeSeconds });
         const response = await request(app.getHttpServer()).post(tasksUrl).send(payload);
 
         const errorMessages: string[] = [];
         if (typeof taskTimeSeconds === 'number' && taskTimeSeconds < 0) {
-          errorMessages.push('taskTimeSeconds must not be less than 0');
+          errorMessages.push('tasks.0.taskTimeSeconds must not be less than 0');
         }
 
         if (typeof taskTimeSeconds === 'number' && taskTimeSeconds > 3600) {
-          errorMessages.push('taskTimeSeconds must not be greater than 3600');
+          errorMessages.push('tasks.0.taskTimeSeconds must not be greater than 3600');
         }
 
         expect(response.status).toBe(400);
@@ -338,12 +342,12 @@ describe('RobotController e2e tests', () => {
       });
 
       it.each([null, undefined, '', true, 1])('should return a 400 if updatedBy is %s', async (updatedBy) => {
-        Object.assign(payload, { updatedBy });
+        Object.assign(payload.tasks[0], { updatedBy });
         const response = await request(app.getHttpServer()).post(tasksUrl).send(payload);
 
         expect(response.status).toBe(400);
         expect(response.body).toMatchObject({
-          message: getErrorMessages(updatedBy, 'updatedBy', 'string'),
+          message: getErrorMessages(updatedBy, 'tasks.0.updatedBy', 'string'),
         });
       });
     });
