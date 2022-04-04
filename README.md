@@ -2,6 +2,14 @@
 
 Project to schedule and dispatch prioritized tasks to a robot.
 
+The idea of this service is that it acts as the scheduler and dispatcher of tasks for its robots. It is initially seeded with the robot, Moxie, but other robots can be added as well.
+
+Robot actions will be assumed by a human for this project.
+
+Tasks can be created for specific robots and the robots (or human) will send events to this service's webhook when it has either `COMPLETED` or `ABANDONED` its current task. A robot cannot multitask and may only have one active task at a time. Once a robot lets the service know it is finished with its currently active task, it will automatically be assigned another one if there are any left in its task queue.
+
+The active task, task queue, and task history can all be seen when inspecting a robot.
+
 ## Installation
 
 ```bash
@@ -36,6 +44,18 @@ $ npm run test:cov
 http://localhost:3000/api-doc
 ```
 
+## Instructions
+
+1. Import the [diligent-scheduler.postman_collection.json](/diligent-scheduler.postman_collection.json) file into `Postman`.
+2. Run the requests in the collection in order. Steps 1-4 setup the initial state and data. Steps 5 dispatches the next highest priority task and Step 6 shows the result.
+3. Repeat steps 5 and 6 to continue cycling through the tasks to verify the results.
+
+This combinatory test of task priority and time is also located [here](https://github.com/ctran88/diligent_scheduler/blob/b2b0aa789e5f5e22fdada409f39425a196db7128/test/e2e/webhook/webhook.controller.spec.ts#L269) as an e2e test.
+
+The logic for this task prioritization is located [here](https://github.com/ctran88/diligent_scheduler/blob/e924bdb9c4ddf60b77540c6df275e4c8c16aa1d5/src/task/task.entity.ts#L35) to set a custom order for the `priority` field and [here](https://github.com/ctran88/diligent_scheduler/blob/e924bdb9c4ddf60b77540c6df275e4c8c16aa1d5/src/task/task.service.ts#L17) as a SQL statement.
+
+Everything is stored in memory with SQLite, so just `ctrl + c` and `npm start` to reset the application state.
+
 ## Trade-offs for this exercise
 - A separate service for the robot has been scoped out of this project and those actions are instead performed by a human interacting with this API.
 - The `RobotEntity` data model is very slim since this is focused on the scheduling logic.
@@ -62,6 +82,7 @@ http://localhost:3000/api-doc
 - Find a better way to support batch creating tasks. Would prefer an array of `CreateTaskDto` instead of an object with a `tasks: CreateTaskDto[]` property. Couldn't find a away to do that and keep validation though.
 - Add a Kafka broker and zookeeper service with a consumer/producer pattern to push events on a topic instead of direct communication between the service and robot.
 - More scalable prioritization logic. Once the `tasks` table starts accruing hundreds of thousands of records, using a SQL query to sort it each time will become very slow.
+- Add routing logic so that a robot may multitask and perform multiple actions at once if it can hold multiple items and deliver them to a single or multiple destinations in a similar vicinity.
 
 ## Design questions
 > What components may be required to accomplish this on a high level?

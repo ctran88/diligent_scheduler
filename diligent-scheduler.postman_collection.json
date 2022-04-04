@@ -1,0 +1,219 @@
+{
+	"info": {
+		"_postman_id": "40d6af8e-c669-49af-bb28-ddb2f1d8dea5",
+		"name": "diligent-scheduler",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Get default robot by ID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/robots/1",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"robots",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "2. Batch create tasks for default robot",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();",
+							"var taskId = jsonData.taskQueue.find(i => i.name === 'this will be seeded as the first active task').id;",
+							"pm.collectionVariables.set(\"seededTaskId\", taskId);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"tasks\": [\n        {\n            \"name\": \"this will be seeded as the first active task\",\n            \"priority\": \"LOW\",\n            \"taskTimeSeconds\": 10,\n            \"updatedBy\": \"Seeder\"\n        },\n        {\n            \"name\": \"medium priority, high time task\",\n            \"priority\": \"MEDIUM\",\n            \"taskTimeSeconds\": 3,\n            \"updatedBy\": \"Diligent\"\n        },\n        {\n            \"name\": \"medium priority, low time task\",\n            \"priority\": \"MEDIUM\",\n            \"taskTimeSeconds\": 1,\n            \"updatedBy\": \"Diligent\"\n        },\n        {\n            \"name\": \"medium priority, medium time task\",\n            \"priority\": \"MEDIUM\",\n            \"taskTimeSeconds\": 2,\n            \"updatedBy\": \"Diligent\"\n        },\n        {\n            \"name\": \"high priority, high time task\",\n            \"priority\": \"HIGH\",\n            \"taskTimeSeconds\": 3,\n            \"updatedBy\": \"Diligent\"\n        },\n        {\n            \"name\": \"high priority, medium time task\",\n            \"priority\": \"HIGH\",\n            \"taskTimeSeconds\": 2,\n            \"updatedBy\": \"Diligent\"\n        },\n        {\n            \"name\": \"high priority, low time task\",\n            \"priority\": \"HIGH\",\n            \"taskTimeSeconds\": 1,\n            \"updatedBy\": \"Diligent\"\n        },\n        {\n            \"name\": \"low priority, high time task\",\n            \"priority\": \"LOW\",\n            \"taskTimeSeconds\": 3,\n            \"updatedBy\": \"Diligent\"\n        },\n        {\n            \"name\": \"low priority, medium time task\",\n            \"priority\": \"LOW\",\n            \"taskTimeSeconds\": 2,\n            \"updatedBy\": \"Diligent\"\n        },\n        {\n            \"name\": \"low priority, low time task\",\n            \"priority\": \"LOW\",\n            \"taskTimeSeconds\": 1,\n            \"updatedBy\": \"Diligent\"\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/robots/1/tasks",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"robots",
+						"1",
+						"tasks"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "3. Dispatch the seed task",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"robotId\": 1,\n    \"taskId\": {{seededTaskId}},\n    \"status\": \"COMPLETED\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/webhooks/tasks",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"webhooks",
+						"tasks"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "4. See the dispatched seed task",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();",
+							"pm.collectionVariables.set(\"currentTaskId\", jsonData.activeTask.id);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/robots/1",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"robots",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "5. Dispatch the next task",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"robotId\": 1,\n    \"taskId\": {{currentTaskId}},\n    \"status\": \"COMPLETED\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/webhooks/tasks",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"webhooks",
+						"tasks"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "6. See the next dispatched task",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();",
+							"pm.collectionVariables.set(\"currentTaskId\", jsonData.activeTask.id);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/robots/1",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"robots",
+						"1"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000/v1",
+			"type": "default"
+		},
+		{
+			"key": "seededTaskId",
+			"value": "",
+			"type": "default"
+		},
+		{
+			"key": "currentTaskId",
+			"value": "",
+			"type": "default"
+		}
+	]
+}
